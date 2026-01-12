@@ -83,7 +83,7 @@ If you compiled the program in the project directory, run it with:
 
 ## Data Storage
 
-All course data is automatically saved to `data.txt` in the following format:
+All course data is automatically saved to `data.txt` in the project folder, in the following format:
 
 ```
 COURSE_NAME GRADE CREDITS
