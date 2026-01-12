@@ -15,6 +15,7 @@ typedef struct {
     char shortName[101];
     int credits;
     char grade;
+    bool hasGrade;
 } Entry;
 
 typedef struct {
@@ -28,7 +29,9 @@ void saveToFile(Data * data) {
     if (!file) return;
     for (int i = 0; i < data->entryCnt; i++) {
         Entry * curr = &data->entries[i];
-        fprintf(file, "%s %c %d\n", curr->shortName, curr->grade, curr->credits);
+
+        char gradeToSave = curr->hasGrade ? curr->grade : '_';
+        fprintf(file, "%s %d %c\n", curr->shortName, curr->credits, gradeToSave);
     }
     fclose(file);
 }
@@ -49,18 +52,20 @@ void readAllGrades(Data * data) {
         return;
     }
 
-    printf("\n" CLR_HEADER "+----------------------+--------+---------+\n");
-    printf("| %-20s | %-6s | %-7s |\n", "Course", "Grade", "Credits");
-    printf("+----------------------+--------+---------+\n" CLR_RESET);
+    printf("\n" CLR_HEADER "╔═══════════════════════╦═════════╦════════╗\n");
+    printf(                "║ %-21s ║ %-7s ║ %-6s ║\n", "Course", "Credits", "Grade");
+    printf(                "╠═══════════════════════╬═════════╬════════╣\n" CLR_RESET);
 
     for (int i = 0; i < data->entryCnt; i++) {
         Entry * curr = &data->entries[i];
-        // Formátování: %-20s (20 zn) + mezery okolo = 22 znaku pro prvni sloupec
-        printf("| %-20s |   %c    |   %2d    |\n",
-            curr->shortName, curr->grade, curr->credits
+        char gradeDisplay = curr->hasGrade ? curr->grade : '-';
+
+        printf(CLR_HEADER "║" CLR_RESET " %-21s " CLR_HEADER "║" CLR_RESET "   %2d    " CLR_HEADER "║" CLR_RESET "   %c    " CLR_HEADER "║\n" CLR_RESET,
+            curr->shortName, curr->credits, gradeDisplay
         );
     }
-    printf(CLR_HEADER "+----------------------+--------+---------+\n\n" CLR_RESET);
+
+    printf(CLR_HEADER      "╚═══════════════════════╩═════════╩════════╝\n\n" CLR_RESET);
 }
 
 int compByShortName(const void * a, const void * b) {
@@ -74,26 +79,31 @@ void addEntry(Data * data, char * cursor) {
     int shortNameLen = 0;
     int credits = 0;
     char grade;
+    bool hasGrade = false;
 
+    // parse short name
     while (*cursor == ' ') cursor++;
     while (*cursor != ' ') {
         if (*cursor == '\n' || *cursor == '\0') {
             printf(CLR_ERR "[!] Error: Incomplete format (grade/credits missing).\n" CLR_RESET);
             return;
         }
+
+        if (shortNameLen >= 100) {
+            printf(CLR_ERR "[!] Error: name shortcut too long (must be 1-100 characters).\n" CLR_RESET);
+            return;
+        }
+
         shortName[shortNameLen++] = *cursor;
         cursor++;
     }
-    shortName[shortNameLen] = '\0';
-
-    while (*cursor == ' ') cursor++;
-    if (*cursor != 'A' && *cursor != 'B' && *cursor != 'C' && *cursor != 'D' && *cursor != 'E' && *cursor != 'F') {
-        printf(CLR_ERR "[!] Error: Invalid Grade '%c'. Valid grades are A-F.\n" CLR_RESET, *cursor);
+    if (shortNameLen == 0) {
+        printf(CLR_ERR "[!] Error: name shortcut too long (must be 1-100 characters).\n" CLR_RESET);
         return;
     }
-    grade = *cursor;
-    cursor++;
+    shortName[shortNameLen] = '\0';
 
+    // parse credits
     while (*cursor == ' ') cursor++;
     while (*cursor != '\0' && *cursor != '\n' && *cursor != ' ') {
         if (!isdigit(*cursor)) {
@@ -103,10 +113,30 @@ void addEntry(Data * data, char * cursor) {
         credits = credits * 10 + (*cursor - '0');
         cursor++;
     }
-
-    if (credits <= 0 || credits >= 100 || shortNameLen == 0) {
+    if (credits <= 0 || credits >= 100) {
         printf(CLR_ERR "[!] Error: Invalid input data (credits 1-99).\n" CLR_RESET);
         return;
+    }
+
+    // parse grade
+    while (*cursor == ' ') cursor++;
+    if (*cursor != ' ' && *cursor != '\n' && *cursor != '\0') {
+        if (*cursor != 'A' && *cursor != 'B' && *cursor != 'C' && *cursor != 'D' && *cursor != 'E' && *cursor != 'F') {
+            printf("cursor: %c\n", *cursor);
+            printf(CLR_ERR "[!] Error: Invalid Grade '%c'. Valid grades are A-F.\n" CLR_RESET, *cursor);
+            return;
+        }
+        grade = *cursor;
+        hasGrade = true;
+        cursor++;
+    }
+
+    // check for trailing characters
+    while (*cursor != '\n' && *cursor != '\0') {
+        if (*cursor != ' ') {
+            printf(CLR_ERR "[!] Error: Invalid input.\n" CLR_RESET);
+            return;
+        }
     }
 
     qsort(data->entries, data->entryCnt, sizeof(Entry), compByShortName);
@@ -125,8 +155,14 @@ void addEntry(Data * data, char * cursor) {
     }
 
     data->entries[data->entryCnt].credits = credits;
-    data->entries[data->entryCnt].grade = grade;
     strcpy(data->entries[data->entryCnt].shortName, shortName);
+    if (hasGrade) {
+        data->entries[data->entryCnt].grade = grade;
+        data->entries[data->entryCnt].hasGrade = true;
+    } else {
+        data->entries[data->entryCnt].grade = ' ';
+        data->entries[data->entryCnt].hasGrade = false;
+    }
     data->entryCnt++;
 
     saveToFile(data);
@@ -177,24 +213,33 @@ void calculateGPA(Data * data) {
     }
 
     float totalPoints = 0;
+    int gradedCredits = 0;
     int totalCredits = 0;
 
     for (int i = 0; i < data->entryCnt; i++) {
         Entry * curr = &data->entries[i];
         totalCredits += curr->credits;
-        if (curr->grade == 'A') totalPoints += (4.0 * curr->credits);
-        else if (curr->grade == 'B') totalPoints += (3.0 * curr->credits);
-        else if (curr->grade == 'C') totalPoints += (2.0 * curr->credits);
-        else if (curr->grade == 'D') totalPoints += (1.0 * curr->credits);
-        else if (curr->grade == 'E') totalPoints += (0.5 * curr->credits);
+
+        if (curr->hasGrade) {
+            gradedCredits += curr->credits;
+            if (curr->grade == 'A')      totalPoints += (4.0f * curr->credits);
+            else if (curr->grade == 'B') totalPoints += (3.0f * curr->credits);
+            else if (curr->grade == 'C') totalPoints += (2.0f * curr->credits);
+            else if (curr->grade == 'D') totalPoints += (1.0f * curr->credits);
+            else if (curr->grade == 'E') totalPoints += (0.5f * curr->credits);
+            else if (curr->grade == 'F') totalPoints += (0.0f * curr->credits);
+        }
     }
 
-    float gpa = totalPoints / (float)totalCredits;
     printf("\n" CLR_HEADER "╔════════════════════════════════════╗\n");
-    printf(                "║        Current student's GPA       ║\n");
+    printf(                "║        Student Statistics          ║\n");
     printf(                "╠════════════════════════════════════╣\n");
-    printf(                "║             >  %.2f  <             ║\n", gpa);
-    printf(                "╚════════════════════════════════════╝\n\n" CLR_RESET);
+    if (gradedCredits > 0)
+        printf(CLR_HEADER  "║" CLR_RESET "  GPA:           >  %.2f <          " CLR_HEADER "║\n" CLR_RESET, totalPoints / (float)gradedCredits);
+    else
+        printf(CLR_HEADER  "║" CLR_RESET "  GPA:           >  N/A     <       " CLR_HEADER "║\n" CLR_RESET);
+    printf(CLR_HEADER      "║" CLR_RESET "  Total Credits: >  %3d <           " CLR_HEADER "║\n" CLR_RESET, totalCredits);
+    printf(CLR_HEADER      "╚════════════════════════════════════╝\n\n" CLR_RESET);
 }
 
 int main () {
@@ -208,14 +253,23 @@ int main () {
         char shortName[101];
         int credits;
         char grade;
-        while (fscanf(file, "%100s %c %d", shortName, &grade, &credits ) != EOF) {
+
+        while (fscanf(file, "%100s %d %c", shortName, &credits, &grade) == 3) {
             if (data.entryCnt + 1 >= data.entryCap) {
                 data.entryCap *= 2;
                 data.entries = (Entry *) realloc(data.entries, data.entryCap * sizeof(Entry));
             }
+
             data.entries[data.entryCnt].credits = credits;
-            data.entries[data.entryCnt].grade = grade;
             strcpy(data.entries[data.entryCnt].shortName, shortName);
+
+            if (grade == '_') {
+                data.entries[data.entryCnt].grade = ' ';
+                data.entries[data.entryCnt].hasGrade = false;
+            } else {
+                data.entries[data.entryCnt].grade = grade;
+                data.entries[data.entryCnt].hasGrade = true;
+            }
             data.entryCnt++;
         }
         fclose(file);

@@ -63,7 +63,7 @@ If you compiled the program in the project directory, run it with:
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `+` | Add a new course entry | `+ MATH101 A 3` |
+| `+` | Add a new course entry | `+ MATH101 3 A` |
 | `-` | Remove a course entry | `- MATH101` |
 | `?` | List all courses in a formatted table | `?` |
 | `=` | Calculate and display current GPA | `=` |
@@ -73,8 +73,8 @@ If you compiled the program in the project directory, run it with:
 
 - **Add entry**: `+ [course_name] [grade] [credits]`
   - `course_name`: Course identifier (up to 100 characters, no spaces)
-  - `grade`: Single letter grade (A, B, C, D, E, or F)
   - `credits`: Number of credits (1-99)
+  - `grade`: Single letter grade (A, B, C, D, E, or F) (optional, if not specified it won't be used to calculate GPA)
 
 - **Remove entry**: `- [course_name]`
   - `course_name`: Course identifier to remove
