@@ -46,11 +46,19 @@ bool parseCommand(char ** cursor, char * command) {
     return true;
 }
 
+int compByShortName(const void * a, const void * b) {
+    Entry * A = (Entry *) a;
+    Entry * B = (Entry *) b;
+    return strcmp(A->shortName, B->shortName);
+}
+
 void readAllGrades(Data * data) {
     if (data->entryCnt == 0) {
         printf(CLR_INFO "[-] Database is currently empty.\n" CLR_RESET);
         return;
     }
+
+    qsort(data->entries, data->entryCnt, sizeof(Entry), compByShortName);
 
     printf("\n" CLR_HEADER "╔═══════════════════════╦═════════╦════════╗\n");
     printf(                "║ %-21s ║ %-7s ║ %-6s ║\n", "Course", "Credits", "Grade");
@@ -66,12 +74,6 @@ void readAllGrades(Data * data) {
     }
 
     printf(CLR_HEADER      "╚═══════════════════════╩═════════╩════════╝\n\n" CLR_RESET);
-}
-
-int compByShortName(const void * a, const void * b) {
-    Entry * A = (Entry *) a;
-    Entry * B = (Entry *) b;
-    return strcmp(A->shortName, B->shortName);
 }
 
 void addEntry(Data * data, char * cursor) {
