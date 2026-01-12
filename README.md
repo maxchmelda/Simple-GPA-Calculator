@@ -6,10 +6,11 @@ A simple, command-line GPA (Grade Point Average) calculator written in C. This t
 
 ## Features
 
-- **Add courses** with grades and credit hours
+- **Add courses** with credits and (grades)
 - **Remove courses** from your database
 - **List all courses** in a formatted table
-- **Calculate GPA** using standard grade point values
+- **Calculate GPA** using standard grade point values from entries with grade
+- **Calculate total credits** including entries with no grade
 - **Persistent storage** - data is automatically saved locally to `./data.txt`
 
 ## Installation
