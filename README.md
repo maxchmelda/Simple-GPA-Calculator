@@ -15,11 +15,6 @@ A simple, command-line GPA (Grade Point Average) calculator written in C. This t
 
 ## Installation
 
-### Prerequisites
-
-- A C compiler (G++, Clang, etc.)
-- A Unix-like terminal (Linux, macOS, or WSL on Windows)
-
 ### Compilation
 
 ```bash
@@ -88,22 +83,3 @@ All course data is automatically saved to `data.txt` in the project folder, in t
 ```
 COURSE_NAME GRADE CREDITS
 ```
-
-Example:
-```
-CS101 A 4
-MATH201 B 3
-PHYS101 C 4
-```
-
-The file is created automatically when you add your first course and updated whenever you add or remove entries.
-
-## Error Handling
-
-The program includes comprehensive error handling:
-
-- Invalid grade letters
-- Invalid credit values (must be 1-99)
-- Duplicate course entries
-- Missing course names
-- Incomplete command formats
