@@ -1,8 +1,8 @@
 # GPA Calculator
 
-A simple, command-line GPA (Grade Point Average) calculator written in C. This tool allows you to manage your course grades and calculate your GPA interactively with a clean terminal interface.
+A simple, command-line GPA calculator written in C. This tool allows you to manage your course grades and calculate your GPA with a clean and colorful terminal interface.
 
-![Screenshot description](./screenshot.png)
+![Screenshot](./screenshot.png)
 
 ## Features
 
@@ -11,45 +11,18 @@ A simple, command-line GPA (Grade Point Average) calculator written in C. This t
 - **List all courses** in a formatted table
 - **Calculate GPA** using standard grade point values from entries with grade
 - **Calculate total credits** including entries with no grade
-- **Persistent storage** - data is automatically saved locally to `./data.txt`
-
-## Installation
-
-### Compilation
-
-```bash
-g++ -Wall -pedantic -Wextra -fsanitize=address -g main.c -o main
-```
-
-### System-wide Installation (Optional)
-
-To install the GPA calculator system-wide so you can run it from anywhere using the `gpa` command:
-
-1. Compile the program (see above)
-
-2. Move the executable `./main` to `/usr/local/bin/gpa`:
-   ```bash
-   sudo mv ./main /usr/local/bin/gpa
-   ```
-
-Now you can run the GPA calculator from any directory simply by typing:
-```bash
-gpa
-```
-
-**Note**: You may need `sudo` privileges to write to `/usr/local/bin`. If you prefer not to use `sudo`, you can install it to `~/bin` instead (create the directory first with `mkdir -p ~/bin`), but make sure `~/bin` is in your PATH.
+- **Data saving** - data is automatically saved locally to `./data.txt`
 
 ## Usage
 
 ### Running Locally
 
-If you installed the program system-wide, run it with:
+Compile the program in the project directory:
 
 ```bash
-gpa
+g++ -Wall -pedantic -Wextra -fsanitize=address -g main.c -o main
 ```
-
-If you compiled the program in the project directory, run it with:
+And run it with:
 
 ```bash
 ./main
@@ -76,10 +49,8 @@ If you compiled the program in the project directory, run it with:
   - `course_name`: Course identifier to remove
 
 
-## Data Storage
+## Features i could probably add
 
-All course data is automatically saved to `data.txt` in the project folder, in the following format:
-
-```
-COURSE_NAME GRADE CREDITS
-```
+- Saving data to a database
+- Encrypting data to make it more secure
+- Some more functions fx to manage individual courses and points
